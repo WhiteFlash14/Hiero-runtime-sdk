@@ -1,0 +1,32 @@
+{
+    "name": "@hiero-runtime/sdk",
+    "version": "0.1.0",
+    "private": false,
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
+    "dependencies": {
+        "@hiero-runtime/bindings-node": "workspace:*"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "clean": "node -e \"import('node:fs/promises').then(fs => fs.rm('dist', { recursive: true, force: true }))\"",
+        "test": "node --test test/*.mjs",
+        "typecheck": "tsc -p tsconfig.json --noEmit"
+    },
+    "devDependencies": {
+        "typescript": "^5.7.3"
+    }
+}
