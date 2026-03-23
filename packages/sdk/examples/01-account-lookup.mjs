@@ -7,13 +7,15 @@
  *   - Balance displayed in both tinybar and HBAR
  *   - Structured HieroRuntimeError with .code and .retryable
  *
- * node packages/sdk/examples/01-account-lookup.mjs
+ * Override the network (default: testnet):
+ *   HEDERA_NETWORK=mainnet node packages/sdk/examples/01-account-lookup.mjs
  */
 
 import { createClient, HieroRuntimeError } from "../dist/index.js";
 import { tinybarsToHbar, printSection, printError } from "./_utils.mjs";
 
-const client = await createClient({ network: "testnet" });
+const network = process.env.HEDERA_NETWORK ?? "testnet";
+const client = await createClient({ network });
 
 // ── Query the Hedera treasury account ─────────────────────────────────────
 // Account 0.0.98 is the Hedera treasury — guaranteed to exist with a large

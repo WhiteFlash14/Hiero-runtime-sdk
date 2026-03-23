@@ -8,6 +8,9 @@
  *   - performance.now() timing
  *
  *   node packages/sdk/examples/02-transaction-history.mjs
+ * 
+ * Override the network (default: testnet):
+ *   HEDERA_NETWORK=mainnet node packages/sdk/examples/02-transaction-history.mjs
  */
 
 import { createClient } from "../dist/index.js";
@@ -16,7 +19,8 @@ import { printSection, formatTimestamp, summarizeTxTypes } from "./_utils.mjs";
 const ACCOUNT_ID = "0.0.98"; 
 const PAGE_SIZE = 10;
 
-const client = await createClient({ network: "testnet" });
+const network = process.env.HEDERA_NETWORK ?? "testnet";
+const client = await createClient({ network });
 
 // ── 1. Manual cursor pagination ───────────────────────────────────────────────
 // list() returns { items, nextCursor }. Pass nextCursor back to fetch the

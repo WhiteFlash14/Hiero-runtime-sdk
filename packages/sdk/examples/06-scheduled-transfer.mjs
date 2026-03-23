@@ -1,3 +1,33 @@
+/**
+ * Example 06 — Scheduled Transfer Lifecycle
+ *
+ * Demonstrates:
+ *   - schedule.createTransfer() — wrap a transfer in a ScheduleCreateTransaction
+ *   - schedule.get()            — query current status and list of signatories
+ *   - schedule.sign()           — add a co-signature (multi-party signing)
+ *   - schedule.wait()           — poll until execution, return finalized tx
+ *   - schedule.delete()         — cancel a pending schedule
+ *
+ * Scheduled transactions are one of the most powerful and unique features of
+ * Hedera. They allow multiple parties to agree on a future action without any
+ * party having to hold another's private key.
+ *
+ * REQUIRES credentials:
+ *
+ *   export HEDERA_NETWORK=testnet                    # testnet | mainnet | previewnet (default: testnet)
+ *   export HEDERA_OPERATOR_ID=0.0.12345
+ *   export HEDERA_OPERATOR_KEY=3030...
+ *   export HEDERA_RECEIVER_ID=0.0.67890              # optional, defaults to 0.0.98
+ *
+ * Optional — enables the real multi-sig path:
+ *   export HEDERA_SECOND_SIGNER_ACCOUNT_ID=0.0.67890
+ *   export HEDERA_SECOND_SIGNER_KEY=3030...
+ *
+ *   node packages/sdk/examples/06-scheduled-transfer.mjs
+ *
+ * Get free testnet credentials at https://portal.hedera.com
+ */
+
 import { createClient, HieroRuntimeError } from "../dist/index.js";
 import {
   tinybarsToHbar,
@@ -6,6 +36,7 @@ import {
   formatTimestamp,
 } from "./_utils.mjs";
 
+const network = process.env.HEDERA_NETWORK ?? "testnet";
 const operatorId = process.env.HEDERA_OPERATOR_ID;
 const operatorKey = process.env.HEDERA_OPERATOR_KEY;
 const receiverId = process.env.HEDERA_RECEIVER_ID ?? "0.0.98";
@@ -14,11 +45,13 @@ const secondSignerKey = process.env.HEDERA_SECOND_SIGNER_KEY;
 if (!operatorId || !operatorKey) {
   console.log("Scheduled Transfer example requires credentials.\n");
   console.log("Set these environment variables, then re-run:");
+  console.log("  export HEDERA_NETWORK=testnet              # or mainnet / previewnet");
   console.log("  export HEDERA_OPERATOR_ID=0.0.<your-account>");
-  console.log("  export HEDERA_OPERATOR_KEY=302e...  (your ED25519 private key)");
-  console.log("  export HEDERA_RECEIVER_ID=0.0.<receiver>  # optional\n");
-  console.log("Optional — enables multi-sig demo:");
-  console.log("  export HEDERA_SECOND_SIGNER_KEY=302e...\n");
+  console.log("  export HEDERA_OPERATOR_KEY=3030...         (your ECDSA private key, DER-encoded)");
+  console.log("  export HEDERA_RECEIVER_ID=0.0.<receiver>   # optional\n");
+  console.log("Optional — real multi-sig path:");
+  console.log("  export HEDERA_SECOND_SIGNER_ACCOUNT_ID=0.0.<second-account>");
+  console.log("  export HEDERA_SECOND_SIGNER_KEY=3030...\n");
   console.log("Free testnet accounts: https://portal.hedera.com");
   process.exit(0);
 }
@@ -30,7 +63,7 @@ const fromAccountId = (secondSignerKey && secondSignerAccountId) ? secondSignerA
 const payerAccountId = (secondSignerKey && secondSignerAccountId) ? operatorId : undefined;
 
 const client = await createClient({
-  network: "testnet",
+  network,
   operator: { accountId: operatorId, privateKey: operatorKey },
   finality: { receiptTimeoutMs: 15_000, mirrorTimeoutMs: 20_000, pollIntervalMs: 300 },
 });

@@ -9,9 +9,10 @@
  *   - finality.waitForReceipt() — just the consensus layer, no Mirror polling
  *
  * REQUIRES credentials set as environment variables:
+ *   export HEDERA_NETWORK=testnet        # testnet | mainnet | previewnet (default: testnet)
  *
  *   export HEDERA_OPERATOR_ID=0.0.12345
- *   export HEDERA_OPERATOR_KEY=302e020100300506032b6570...
+ *   export HEDERA_OPERATOR_KEY=3030...
  *   export HEDERA_RECEIVER_ID=0.0.67890   # optional, defaults to 0.0.98
  *
  *   node packages/sdk/examples/05-hbar-transfer.mjs
@@ -22,6 +23,7 @@
 import { createClient, HieroRuntimeError } from "../dist/index.js";
 import { tinybarsToHbar, printSection, printError, formatTimestamp } from "./_utils.mjs";
 
+const network = process.env.HEDERA_NETWORK ?? "testnet";
 const operatorId = process.env.HEDERA_OPERATOR_ID;
 const operatorKey = process.env.HEDERA_OPERATOR_KEY;
 const receiverId = process.env.HEDERA_RECEIVER_ID ?? "0.0.98";
@@ -29,19 +31,22 @@ const receiverId = process.env.HEDERA_RECEIVER_ID ?? "0.0.98";
 if (!operatorId || !operatorKey) {
   console.log("HBAR Transfer example requires credentials.\n");
   console.log("Set these environment variables, then re-run:");
+  console.log("  export HEDERA_NETWORK=testnet          # or mainnet / previewnet");
   console.log("  export HEDERA_OPERATOR_ID=0.0.<your-account>");
-  console.log("  export HEDERA_OPERATOR_KEY=302e...  (your ED25519 private key)");
+  console.log("  export HEDERA_OPERATOR_KEY=3030...     (your ECDSA private key, DER-encoded)");
   console.log("  export HEDERA_RECEIVER_ID=0.0.<receiver>  # optional\n");
   console.log("Free testnet accounts: https://portal.hedera.com");
   process.exit(0);
 }
 
-const AMOUNT_TINYBAR = "1000000"; // 0.01 HBAR — small enough to be free on testnet
+const AMOUNT_TINYBAR = "1000000"; // 0.01 HBAR 
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
 
+console.log(`  Network: ${network}`);
+
 const client = await createClient({
-  network: "testnet",
+  network,
   operator: {
     accountId: operatorId,
     privateKey: operatorKey,

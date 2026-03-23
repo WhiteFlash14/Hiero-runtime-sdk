@@ -11,12 +11,16 @@
  * listing the most recent transaction for account 0.0.98.
  *
  *   node packages/sdk/examples/03-transaction-lookup.mjs
+ *  
+ * Override the network (default: testnet):
+ *   HEDERA_NETWORK=mainnet node packages/sdk/examples/03-transaction-lookup.mjs
  */
 
 import { createClient, HieroRuntimeError } from "../dist/index.js";
 import { printSection, printError, formatTimestamp } from "./_utils.mjs";
 
-const client = await createClient({ network: "testnet" });
+const network = process.env.HEDERA_NETWORK ?? "testnet";
+const client = await createClient({ network });
 
 // ── 1. Get a real transaction ID from the treasury account ────────────────────
 
