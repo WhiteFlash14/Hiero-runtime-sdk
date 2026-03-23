@@ -1,0 +1,23 @@
+{
+    "name": "@hiero-runtime/bindings-node",
+    "version": "0.1.0",
+    "private": true,
+    "main": "index.js",
+    "types": "index.d.ts",
+    "files": [
+        "index.js",
+        "index.d.ts",
+        "*.node"
+    ],
+    "napi": {
+        "binaryName": "hiero_runtime_bindings_node"
+    },
+    "scripts": {
+        "build": "napi build --platform --release",
+        "clean": "node -e \"import('node:fs/promises').then(fs => Promise.all([fs.rm('hiero_runtime_bindings_node.node', { force: true }), fs.rm('artifacts', { recursive: true, force: true })]))\"",
+        "typecheck": "node -e \"console.log('bindings-node: no TypeScript sources to check (types generated from Rust)')\""
+    },
+    "devDependencies": {
+        "@napi-rs/cli": "^3.0.0"
+    }
+}
