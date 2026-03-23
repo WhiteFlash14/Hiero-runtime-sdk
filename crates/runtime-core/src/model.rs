@@ -69,14 +69,28 @@ impl TransactionRef {
 
     /// Returns the Mirror Node API path for this transaction reference
     pub fn to_mirror_path(&self) -> String {
-        let mut path = format!("/api/v1/transactions/{}", self.base_id);
+        let normalized = normalize_tx_id_for_mirror(&self.base_id);
+        let mut path = format!("/api/v1/transactions/{normalized}");
         if self.scheduled {
-            path.push_str("?scheduled");
+            path.push_str("?scheduled=true");
         } else if let Some(n) = self.nonce {
             path.push_str(&format!("?nonce={n}"));
         }
         path
     }
+}
+
+fn normalize_tx_id_for_mirror(base_id: &str) -> String {
+    if let Some(at_pos) = base_id.find('@') {
+        let account = &base_id[..at_pos];
+        let timestamp = &base_id[at_pos + 1..];
+        if let Some(dot_pos) = timestamp.find('.') {
+            let seconds = &timestamp[..dot_pos];
+            let nanos = &timestamp[dot_pos + 1..];
+            return format!("{account}-{seconds}-{nanos:0>9}");
+        }
+    }
+    base_id.to_string()
 }
 
 // ── Domain models ─────────────────────────────────────────────────────────────

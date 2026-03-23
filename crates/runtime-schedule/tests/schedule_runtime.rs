@@ -251,11 +251,11 @@ async fn get_returns_schedule_info() {
 async fn wait_for_execution_polls_schedule_and_then_uses_tx_runtime_finality() {
     let server = MockServer::start().await;
     let scheduled_tx_id = "0.0.1001@1719943901.123456789?scheduled";
-    let base_tx_id = "0.0.1001@1719943901.123456789";
+    let mirror_base_path = "/api/v1/transactions/0.0.1001-1719943901-123456789";
 
     Mock::given(method("GET"))
-        .and(path(format!("/api/v1/transactions/{base_tx_id}")))
-        .and(query_param("scheduled", ""))
+        .and(path(mirror_base_path))
+        .and(query_param("scheduled", "true"))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({
             "transactions": [
                 {

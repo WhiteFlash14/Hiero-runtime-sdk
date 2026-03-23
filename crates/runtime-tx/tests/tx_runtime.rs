@@ -115,10 +115,10 @@ async fn wait_for_receipt_polls_until_non_unknown_receipt_exists() {
 async fn attach_returns_handle_that_waits_for_finality() {
     let server = MockServer::start().await;
     let tx_id = "0.0.1001@1719943901.123456789";
-    let endpoint = format!("/api/v1/transactions/{tx_id}");
+    let mirror_path = "/api/v1/transactions/0.0.1001-1719943901-123456789";
 
     Mock::given(method("GET"))
-        .and(path(endpoint))
+        .and(path(mirror_path))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({
             "transactions": [
                 {

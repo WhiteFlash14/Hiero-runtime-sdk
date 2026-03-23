@@ -23,24 +23,25 @@ fn test_finality_policy() -> FinalityPolicy {
     }
 }
 
+const TX_ID: &str = "0.0.1001@1719943901.123456789";
+const TX_PATH: &str = "/api/v1/transactions/0.0.1001-1719943901-123456789";
+
 #[tokio::test]
 async fn get_transaction_normalizes_primary_and_duplicates() {
     let server = MockServer::start().await;
-    let tx_id = "0.0.1001@1719943901.123456789";
-    let endpoint = format!("/api/v1/transactions/{tx_id}");
 
     Mock::given(method("GET"))
-        .and(path(endpoint.clone()))
+        .and(path(TX_PATH))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({
             "transactions": [
                 {
-                    "transaction_id": tx_id,
+                    "transaction_id": TX_ID,
                     "result": "SUCCESS",
                     "consensus_timestamp": "1719943901.111111111",
                     "name": "CRYPTOTRANSFER"
                 },
                 {
-                    "transaction_id": tx_id,
+                    "transaction_id": TX_ID,
                     "result": "DUPLICATE_TRANSACTION",
                     "consensus_timestamp": "1719943901.222222222",
                     "name": "CRYPTOTRANSFER"
@@ -52,11 +53,11 @@ async fn get_transaction_normalizes_primary_and_duplicates() {
 
     let client = MirrorClient::new(server.uri(), test_retry_policy()).expect("client must build");
     let lookup = client
-        .get_transaction(tx_id)
+        .get_transaction(TX_ID)
         .await
         .expect("transaction lookup should succeed");
 
-    assert_eq!(lookup.requested_transaction_id, tx_id);
+    assert_eq!(lookup.requested_transaction_id, TX_ID);
     assert_eq!(lookup.primary.result, "SUCCESS");
     assert_eq!(
         lookup.primary.consensus_timestamp.as_deref(),
@@ -70,12 +71,10 @@ async fn get_transaction_normalizes_primary_and_duplicates() {
 #[tokio::test]
 async fn get_transaction_retries_on_rate_limit_then_succeeds() {
     let server = MockServer::start().await;
-    let tx_id = "0.0.1001@1719943901.123456789";
-    let endpoint = format!("/api/v1/transactions/{tx_id}");
 
     // First request returns 429 (priority 1 = highest, matches once only)
     Mock::given(method("GET"))
-        .and(path(endpoint.clone()))
+        .and(path(TX_PATH))
         .respond_with(ResponseTemplate::new(429).set_body_string("rate limited"))
         .up_to_n_times(1)
         .with_priority(1)
@@ -84,11 +83,11 @@ async fn get_transaction_retries_on_rate_limit_then_succeeds() {
 
     // Subsequent requests return 200 (priority 5 = default, matches always)
     Mock::given(method("GET"))
-        .and(path(endpoint))
+        .and(path(TX_PATH))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({
             "transactions": [
                 {
-                    "transaction_id": tx_id,
+                    "transaction_id": TX_ID,
                     "result": "SUCCESS",
                     "consensus_timestamp": "1719943901.111111111",
                     "name": "CRYPTOTRANSFER"
@@ -101,7 +100,7 @@ async fn get_transaction_retries_on_rate_limit_then_succeeds() {
 
     let client = MirrorClient::new(server.uri(), test_retry_policy()).expect("client must build");
     let lookup = client
-        .get_transaction(tx_id)
+        .get_transaction(TX_ID)
         .await
         .expect("client should retry and succeed");
 
@@ -116,12 +115,10 @@ async fn get_transaction_retries_on_rate_limit_then_succeeds() {
 #[tokio::test]
 async fn wait_for_transaction_polls_until_visible_after_not_found() {
     let server = MockServer::start().await;
-    let tx_id = "0.0.1001@1719943901.123456789";
-    let endpoint = format!("/api/v1/transactions/{tx_id}");
 
     // First 2 requests return 404 (priority 1 = highest, matches twice only)
     Mock::given(method("GET"))
-        .and(path(endpoint.clone()))
+        .and(path(TX_PATH))
         .respond_with(ResponseTemplate::new(404).set_body_string("not found"))
         .up_to_n_times(2)
         .with_priority(1)
@@ -130,11 +127,11 @@ async fn wait_for_transaction_polls_until_visible_after_not_found() {
 
     // Third+ requests return 200 (priority 5 = default, matches always)
     Mock::given(method("GET"))
-        .and(path(endpoint))
+        .and(path(TX_PATH))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({
             "transactions": [
                 {
-                    "transaction_id": tx_id,
+                    "transaction_id": TX_ID,
                     "result": "SUCCESS",
                     "consensus_timestamp": "1719943901.333333333",
                     "name": "CRYPTOTRANSFER"
@@ -147,7 +144,7 @@ async fn wait_for_transaction_polls_until_visible_after_not_found() {
 
     let client = MirrorClient::new(server.uri(), test_retry_policy()).expect("client must build");
     let lookup = client
-        .wait_for_transaction(tx_id, &test_finality_policy())
+        .wait_for_transaction(TX_ID, &test_finality_policy())
         .await
         .expect("polling should eventually succeed");
 
@@ -162,18 +159,16 @@ async fn wait_for_transaction_polls_until_visible_after_not_found() {
 #[tokio::test]
 async fn wait_for_transaction_times_out_when_never_visible() {
     let server = MockServer::start().await;
-    let tx_id = "0.0.1001@1719943901.123456789";
-    let endpoint = format!("/api/v1/transactions/{tx_id}");
 
     Mock::given(method("GET"))
-        .and(path(endpoint))
+        .and(path(TX_PATH))
         .respond_with(ResponseTemplate::new(404).set_body_string("not found"))
         .mount(&server)
         .await;
 
     let client = MirrorClient::new(server.uri(), test_retry_policy()).expect("client must build");
     let err = client
-        .wait_for_transaction(tx_id, &test_finality_policy())
+        .wait_for_transaction(TX_ID, &test_finality_policy())
         .await
         .expect_err("missing transaction should time out");
 
