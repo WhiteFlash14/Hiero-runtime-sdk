@@ -62,8 +62,7 @@ mod lazy {
                     let adapter = HieroSdkTxAdapter::from_runtime_config(&self.config)?;
                     Ok(Arc::new(adapter))
                 })
-                .await
-                .map(|r| r.clone())
+                .await.cloned()
         }
     }
 
@@ -119,8 +118,7 @@ mod lazy {
                         HieroSdkScheduleProvider::from_runtime_config(&self.config)?;
                     Ok(Arc::new(provider))
                 })
-                .await
-                .map(|r| r.clone())
+                .await.cloned()
         }
     }
 

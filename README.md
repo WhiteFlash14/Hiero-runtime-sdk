@@ -14,6 +14,15 @@ These were submitted through this SDK against Hedera testnet, no other tools:
 
 `Sender account (0.0.8345047):` [hashscan.io/testnet/account/0.0.8345047](https://hashscan.io/testnet/account/0.0.8345047)
 
+`Example 5 - Crypto Transfer:` [hashscan.io/testnet/transaction/1774293356.141678447](https://hashscan.io/testnet/transaction/1774293356.141678447)
+
+`Example 5 - Receipt Only Tx:` [hashscan.io/testnet/transaction/1774293360.942403917](https://hashscan.io/testnet/transaction/1774293360.942403917)
+
+`Example 6 - Schedule Created:` [hashscan.io/testnet/transaction/1774293390.514946747](https://hashscan.io/testnet/transaction/1774293390.514946747)
+
+`Example 6 - Schedule Sign:` [hashscan.io/testnet/transaction/1774293395.234992683](https://hashscan.io/testnet/transaction/1774293395.234992683)
+
+
 ## Table of Contents
 
 <ol>
