@@ -1,0 +1,14 @@
+# Rust
+target/
+Cargo.lock
+
+# Node / pnpm
+node_modules/
+dist/
+.pnpm-store/
+*.node
+
+# Editor / OS
+.DS_Store
+*.log
+.env
